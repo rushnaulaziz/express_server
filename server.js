@@ -11,12 +11,10 @@ if (cluster.isPrimary) {
     `[PRIMARY ${process.pid}] Launching cluster across ${numCPUs} CPU cores...`,
   );
 
-  // Fork a dedicated worker process per core
   for (let i = 0; i < numCPUs; i++) {
     cluster.fork();
   }
 
-  // Self-Healing: If a process drops or crashes, replace it immediately
   cluster.on("exit", (worker, code, signal) => {
     console.error(
       `[ALERT] Worker process ${worker.process.pid} died. Spawning replacement clone...`,
@@ -24,7 +22,6 @@ if (cluster.isPrimary) {
     cluster.fork();
   });
 } else {
-  // WORKER NODE: Runs an isolated instance of your app on its own CPU core
   const server = app.listen(PORT, () => {
     console.log(
       `🚀 Worker process ${process.pid} listening on http://localhost:${PORT}`,
@@ -43,7 +40,6 @@ if (cluster.isPrimary) {
       process.exit(0);
     });
 
-    // Forced exit safeguard after 10 seconds
     setTimeout(() => {
       console.error(`[PID ${process.pid}] Forced shutdown triggered.`);
       process.exit(1);
